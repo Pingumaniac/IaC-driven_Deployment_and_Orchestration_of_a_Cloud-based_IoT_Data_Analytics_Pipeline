@@ -9,9 +9,6 @@ Instead of the manual approach in PA1, PA2 will automate the process using Infra
 2.	Producer code changes: Since our producer is currently sending traffic in one-way direction as it behaves as a strict publisher, we will need to enhance the producer code such that it runs an additional thread that behaves as a consumer. We need this capability to collect the end-to-end response times for ML inferencing for every sample that we send in the pipeline.  The producer’s consumer thread will now read the “inference result” topic from the Kafka broker but only the sample that corresponds to the original image sent by this producer. The reason we need to match this is because we are going to run multiple producers as described below. Recall that the ML inference server already produces this topic to the Kafka broker for every sample it is inferencing, and you are already updating the database with the result.
 3.	Execution of the data pipeline: Manually execute Kafka, ZooKeeper and DB as processes just like we did in PA1 on VMs distributing them evenly across the VMs. However, we will execute the producer, consumer and ML server inside Docker containers. Distributed these containers also across the four VMs. Let the producer send at least 1,000 samples at some frequency like one sample per second. Collect all the end-to-end latency results and save them to a file for later graph plotting.
 4.	Workload variation: Once you have the pipeline working, we now increase the workload by introducing multiple producers running in their own containers. We test our solution varying the number of producers from 1 to 4. Basically, we run one producer inside its container on each VM.
-![image](https://github.com/user-attachments/assets/f685a9ac-6220-4874-b500-d53ec6c86605)
-
-
 
 ## Technologies Used
 1. Python 3
