@@ -17,7 +17,7 @@ Instead of the manual approach in PA1, PA2 will automate the process using Infra
 4. Chameleon Cloud with Ubuntu Linux version 22.04 image (CC-Ubuntu22.04 on Chameleon)
 5. CIFAR-10 image data set used by the IoT source.
 6. Docker
-7. Anvisible
+7. Ansible
 
 ## Instructions for setting up the technologies used
 
