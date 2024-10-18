@@ -1,1 +1,7 @@
-
+---
+- name: Install required pip packages
+  pip:
+    name:
+      - kafka-python
+      - pymongo
+    state: present

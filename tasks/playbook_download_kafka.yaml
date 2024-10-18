@@ -1,1 +1,28 @@
+---
+- name: Download Kafka
+  get_url:
+    url: "https://downloads.apache.org/kafka/3.8.0/kafka_2.13-3.8.0.tgz"
+    dest: "/tmp/kafka.tgz"
+  register: kafka_download
+  retries: 3
+  delay: 5
+  until: kafka_download is success
 
+- name: Create Kafka directory
+  file:
+    path: "/home/{{ lookup('env', 'USER') }}/kafka"
+    state: directory
+
+- name: Copy Kafka locally
+  copy:
+    src: "/tmp/kafka.tgz"
+    dest: "/home/{{ lookup('env', 'USER') }}/kafka/kafka.tgz"
+    remote_src: yes
+  when: kafka_download is success
+
+- name: Extract Kafka
+  unarchive:
+    src: "/home/{{ lookup('env', 'USER') }}/kafka/kafka.tgz"
+    dest: "/home/{{ lookup('env', 'USER') }}/kafka"
+    remote_src: yes
+  when: kafka_download is success

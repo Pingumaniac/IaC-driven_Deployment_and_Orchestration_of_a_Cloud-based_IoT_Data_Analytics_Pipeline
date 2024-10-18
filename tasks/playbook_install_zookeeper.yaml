@@ -1,0 +1,27 @@
+---
+- name: Find Kafka directory
+  find:
+    paths: "/home/{{ ansible_user }}/kafka"
+    file_type: directory
+    patterns: "kafka_*"
+  register: kafka_dir
+
+- name: Set Kafka home
+  set_fact:
+    kafka_home: "{{ kafka_dir.files[0].path }}"
+
+- name: Configure zookeeper.properties
+  template:
+    src: "{{ playbook_dir }}/templates/zookeeper.properties.j2"
+    dest: "{{ kafka_home }}/config/zookeeper.properties"
+
+- name: Start Zookeeper
+  shell: "nohup {{ kafka_home }}/bin/zookeeper-server-start.sh {{ kafka_home }}/config/zookeeper.properties > /dev/null 2>&1 &"
+  async: 45
+  poll: 0
+
+- name: Wait for Zookeeper to start
+  wait_for:
+    port: 2181
+    delay: 10
+    timeout: 30

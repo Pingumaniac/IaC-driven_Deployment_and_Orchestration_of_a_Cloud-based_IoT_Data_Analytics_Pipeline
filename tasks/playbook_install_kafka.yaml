@@ -1,1 +1,64 @@
+---
+- name: Debug variables
+  debug:
+    msg:
+      - "ansible_user: {{ ansible_user | default('undefined') }}"
 
+- name: Create Kafka directory
+  file:
+    path: "/home/{{ ansible_user }}/kafka"
+    state: directory
+
+- name: Copy Kafka to VMs
+  copy:
+    src: "/tmp/kafka.tgz"
+    dest: "/home/{{ ansible_user }}/kafka/kafka.tgz"
+
+- name: Extract Kafka
+  unarchive:
+    src: "/home/{{ ansible_user }}/kafka/kafka.tgz"
+    dest: "/home/{{ ansible_user }}/kafka"
+    remote_src: yes
+
+- name: Find Kafka directory
+  find:
+    paths: "/home/{{ ansible_user }}/kafka"
+    file_type: directory
+    patterns: "kafka_*"
+  register: kafka_dir
+
+- name: Set Kafka home
+  set_fact:
+    kafka_home: "{{ kafka_dir.files[0].path }}"
+
+- name: Configure server.properties
+  template:
+    src: "{{ playbook_dir }}/templates/server.properties.j2"
+    dest: "{{ kafka_home }}/config/server.properties"
+
+- name: Configure zookeeper.properties
+  template:
+    src: "{{ playbook_dir }}/templates/zookeeper.properties.j2"
+    dest: "{{ kafka_home }}/config/zookeeper.properties"
+
+- name: Start Zookeeper
+  shell: "nohup {{ kafka_home }}/bin/zookeeper-server-start.sh {{ kafka_home }}/config/zookeeper.properties > /dev/null 2>&1 &"
+  async: 45
+  poll: 0
+
+- name: Wait for Zookeeper to start
+  wait_for:
+    port: 2181
+    delay: 10
+    timeout: 30
+
+- name: Start Kafka
+  shell: "nohup {{ kafka_home }}/bin/kafka-server-start.sh {{ kafka_home }}/config/server.properties > /dev/null 2>&1 &"
+  async: 45
+  poll: 0
+
+- name: Wait for Kafka to start
+  wait_for:
+    port: 9092
+    delay: 10
+    timeout: 30

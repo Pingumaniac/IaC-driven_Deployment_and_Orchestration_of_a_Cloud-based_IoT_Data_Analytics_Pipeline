@@ -1,0 +1,59 @@
+import os
+import time
+import json
+from kafka import KafkaProducer
+from PIL import Image
+import io
+import base64
+import uuid
+import random
+from torchvision import datasets, transforms
+import numpy as np
+
+# Assuming VM2's IP is 192.168.5.235
+KAFKA_BROKER = "192.168.5.235:9092"
+
+cifar10 = datasets.CIFAR10(root='./data', train=True, download=True)
+classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+
+def add_noise(image):
+    img_array = np.array(image)
+    mean = 0
+    stddev = 1
+    noise = np.random.normal(mean, stddev, img_array.shape).astype(np.uint8)
+    noisy_img = np.clip(img_array + noise, 0, 255).astype(np.uint8)
+    return Image.fromarray(noisy_img)
+
+def encode_image(image):
+    buffered = io.BytesIO()
+    image.save(buffered, format="PNG")
+    return base64.b64encode(buffered.getvalue()).decode('utf-8')
+
+producer = KafkaProducer(
+    bootstrap_servers=KAFKA_BROKER,
+    value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+    acks=1
+)
+
+for i in range(1000):
+    index = random.randint(0, len(cifar10) - 1)
+    image, label = cifar10[index]
+    
+    noisy_image = add_noise(image)
+    
+    message_id = str(uuid.uuid4())
+    message = {
+        "ID": message_id,
+        "GroundTruth": classes[label],
+        "Data": encode_image(noisy_image)
+    }
+    
+    start_time = time.time()
+    producer.send("image_data", value=message)
+    producer.flush()
+    
+    print(f"Sent image {i+1}: {classes[label]}, ID: {message_id}")
+    
+    time.sleep(1)
+
+producer.close()
