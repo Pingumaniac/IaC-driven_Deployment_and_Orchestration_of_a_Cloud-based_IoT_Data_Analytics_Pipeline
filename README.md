@@ -4,7 +4,7 @@
 
 ## Goals - Key changes from PA1
 
-In PA2, we automate the process using Infrastructure-as-Code (IaC) frameworks like Ansible, enhancing the deployment and scalability of our cloud-based IoT data analytics pipeline.
+In PA2, we automate the process using Infrastructure-as-Code (IaC) frameworks like Ansible, enhancing the deployment and scalability of our cloud-based IoT data analytics pipeline. Our video can be found in the mp4/ directory.
 
 ### Key Changes:
 1. **Ansible Playbooks**: All manual steps from PA1 are now automated using Ansible. This includes creating the VMs, installing packages (including Docker), setting firewall rules, and configuring Kafka via playbooks.
@@ -58,6 +58,8 @@ Latency logs were recorded in the following files for each VM:
 Below is the CDF plot that visualizes the latency for each scenario:
 
 ![Latency CDF](logs/latency_cdf.png)
+
+Surprisingly, we found that having 3 producers was the worst in terms of latency. We do not know why, but attribute this to limited data.
 
 ## Execution Steps
 
